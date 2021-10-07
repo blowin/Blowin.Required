@@ -1,21 +1,20 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using Xunit;
 using VerifyCS = Blowin.Required.Test.CSharpCodeFixVerifier<
     Blowin.Required.BlowinRequiredAnalyzer,
     Blowin.Required.BlowinRequiredCodeFixProvider>;
 
 namespace Blowin.Required.Test
 {
-    [TestClass]
     public class BlowinRequiredUnitTest
     {
-        [DataTestMethod]
-        [DataRow(@"class Person
+        [Theory]
+        [InlineData(@"class Person
         {
         public string Name { get; set; }
         public int Age { get; set; }
     }")]
-        [DataRow(@"class Person
+        [InlineData(@"class Person
         {
         public string Name { get; set; }
         public int Age { get; set; }
@@ -26,7 +25,7 @@ namespace Blowin.Required.Test
             Age = age;
         }
     }")]
-        [DataRow(@"
+        [InlineData(@"
 using System;
 
 class RequiredAttribute : Attribute { }
@@ -43,7 +42,7 @@ class Person
                 Age = age;
             }
         }")]
-        [DataRow(@"using System;
+        [InlineData(@"using System;
 
 class RequiredAttribute : Attribute { }
 
@@ -67,7 +66,7 @@ class Person
                 };
             }
         }")]
-        [DataRow(@"using System;
+        [InlineData(@"using System;
 
 class RequiredAttribute : Attribute { }
 
@@ -91,8 +90,8 @@ class Person
             await VerifyCS.VerifyAnalyzerAsync(test);
         }
         
-        [DataTestMethod]
-        [DataRow(@"using System;
+        [Theory]
+        [InlineData(@"using System;
 
 class RequiredAttribute : Attribute { }
 
@@ -116,7 +115,7 @@ class Person
                 }|};
             }
         }", "Age")]
-        [DataRow(@"using System;
+        [InlineData(@"using System;
 
 class RequiredAttribute : Attribute { }
 
