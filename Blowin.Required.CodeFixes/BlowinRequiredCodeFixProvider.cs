@@ -17,7 +17,7 @@ namespace Blowin.Required
     {
         public sealed override ImmutableArray<string> FixableDiagnosticIds
         {
-            get { return ImmutableArray.Create(BlowinRequiredAnalyzer.DiagnosticId); }
+            get { return ImmutableArray.Create(BlowinRequiredAnalyzer.DiagnosticObjectCreationRuleId); }
         }
 
         public sealed override FixAllProvider GetFixAllProvider()

@@ -133,36 +133,63 @@ class Person
         }", "Age")]
         public async Task Invalid(string test, string argument)
         {
-            var expected = VerifyCS.Diagnostic(BlowinRequiredAnalyzer.DiagnosticId).WithLocation(0).WithArguments(argument);
+            var expected = VerifyCS.Diagnostic(BlowinRequiredAnalyzer.DiagnosticObjectCreationRuleId).WithLocation(0).WithArguments(argument);
             await VerifyCS.VerifyAnalyzerAsync(test, expected);
         }
         
-//        [DataTestMethod]
-//        [DataRow(@"using System;
-//
-//class RequiredAttribute : Attribute { }
-//
-//class Person
-//        {
-//            public string Name { get; set; }
-//            
-//            [Required]
-//            public int Age { get; set; }
-//
-//            public static void Fail()
-//            {
-//                var tt = {|#0:Access<Person>.Test|};
-//            }
-//        }
-//
-//class Access<T> where T : new() 
-//{
-//    public static int Test = 20;
-//}", "Age")]
-//        public async Task InvalidGeneric(string test, string argument)
-//        {
-//            var expected = VerifyCS.Diagnostic(BlowinRequiredAnalyzer.DiagnosticId).WithLocation(0).WithArguments(argument);
-//            await VerifyCS.VerifyAnalyzerAsync(test, expected);
-//        }
+        [Theory]
+        [InlineData(@"using System;
+
+class RequiredAttribute : Attribute { }
+
+class Person
+        {
+            public string Name { get; set; }
+            
+            [Required]
+            public int Age { get; set; }
+
+            public static void Fail()
+            {
+                var tt = Access<{|#0:Person|}>.Test;
+            }
+        }
+
+class Access<T> where T : new() 
+{
+    public static int Test = 20;
+}", "Person")]
+        public async Task InvalidGeneric(string test, string argument)
+        {
+            var expected = VerifyCS.Diagnostic(BlowinRequiredAnalyzer.DiagnosticObjectCreationRuleId).WithLocation(0).WithArguments(argument);
+            await VerifyCS.VerifyAnalyzerAsync(test, expected);
+        }
+        
+        [Theory]
+        [InlineData(@"using System;
+
+class RequiredAttribute : Attribute { }
+
+class Person
+        {
+            public string Name { get; set; }
+            
+            [Required]
+            public int Age { get; set; }
+
+            public static void Fail()
+            {
+                var tt = Access<Person>.Test;
+            }
+        }
+
+class Access<T>
+{
+    public static int Test = 20;
+}")]
+        public async Task ValidGeneric(string test)
+        {
+            await VerifyCS.VerifyAnalyzerAsync(test);
+        }
     }
 }

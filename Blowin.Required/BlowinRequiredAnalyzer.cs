@@ -12,11 +12,20 @@ namespace Blowin.Required
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class BlowinRequiredAnalyzer : DiagnosticAnalyzer
     {
-        public const string DiagnosticId = "BlowinRequired";
+        public const string DiagnosticObjectCreationRuleId = "BlowinRequired";
 
-        private static readonly DiagnosticDescriptor ObjectCreationRule = new DiagnosticDescriptor(DiagnosticId,
+        private static readonly DiagnosticDescriptor ObjectCreationRule = new DiagnosticDescriptor(DiagnosticObjectCreationRuleId,
             "Required property must be initialized",
             "Required property '{0}' must be initialized", 
+            "Feature", 
+            DiagnosticSeverity.Error, 
+            isEnabledByDefault: true);
+        
+        public const string DiagnosticGenericRuleId = "BlowinRequired";
+
+        private static readonly DiagnosticDescriptor GenericRule = new DiagnosticDescriptor(DiagnosticGenericRuleId,
+            "Type can't be used as generic parameter with new() restriction",
+            "Type '{0}' can't be used as generic parameter with new() restriction", 
             "Feature", 
             DiagnosticSeverity.Error, 
             isEnabledByDefault: true);
@@ -29,11 +38,49 @@ namespace Blowin.Required
             context.EnableConcurrentExecution();
             
             context.RegisterOperationAction(AnalyzeObjectCreation, OperationKind.ObjectCreation);
-
-            // TODO validate generic
+            context.RegisterSyntaxNodeAction(AnalyzeTypeArgumentList, SyntaxKind.TypeArgumentList);
+            
+            // TODO: Analyze initialization required fields
             //context.RegisterSyntaxNodeAction(AnalyzeCtor, SyntaxKind.ConstructorDeclaration);
         }
 
+        private ImmutableArray<ITypeParameterSymbol> GetTypeParameters(TypeArgumentListSyntax typeArgumentListSyntax, 
+            SyntaxNodeAnalysisContext context)
+        {
+            var parentSymbol = context.SemanticModel.GetSymbolInfo(typeArgumentListSyntax.Parent).Symbol;
+            if(!(parentSymbol is INamedTypeSymbol namedTypeSymbol))
+                return ImmutableArray<ITypeParameterSymbol>.Empty;
+
+            return namedTypeSymbol.TypeParameters;
+        }
+
+        private void AnalyzeTypeArgumentList(SyntaxNodeAnalysisContext context)
+        {
+            if(!(context.Node is TypeArgumentListSyntax typeArgumentListSyntax))
+                return;
+
+            var array = GetTypeParameters(typeArgumentListSyntax, context);
+            for (var i = 0; i < array.Length; i++)
+            {
+                var typeParameterSymbol = array[i];
+                if(!typeParameterSymbol.HasConstructorConstraint)
+                    continue;
+
+                //                 ↓
+                // GenericHolder<Person>
+                var typeSyntax = typeArgumentListSyntax.Arguments[i];
+                var genericType = context.SemanticModel.GetTypeInfo(typeSyntax).Type;
+                if(genericType == null)
+                    continue;
+                
+                if(!genericType.AllRequiredProperty().Any())
+                    continue;
+                
+                var diagnostic = Diagnostic.Create(ObjectCreationRule, typeSyntax.GetLocation(), typeSyntax.ToString());
+                context.ReportDiagnostic(diagnostic);
+            }
+        }
+        
         private void AnalyzeObjectCreation(OperationAnalysisContext context)
         {
             if(!(context.Operation is IObjectCreationOperation objectCreationOperation))
@@ -43,10 +90,8 @@ namespace Blowin.Required
 
             var initializerProperty = AllInitializerProperty(objectCreationOperation, context);
             
-            var notInitializedRequiredProperty = objectCreationOperation.Type.GetMembers()
-                .OfType<IPropertySymbol>()
-                .Where(p => HasRequiredAttribute(p))
-                .SelectMany(p => ToPropertyDeclarationSyntax(p))
+            var notInitializedRequiredProperty = objectCreationOperation.Type
+                .AllRequiredProperty()
                 .Except(ctorInitializedProperty)
                 .Except(initializerProperty)
                 .Select(e => e.Identifier.Text);
@@ -72,7 +117,7 @@ namespace Blowin.Required
                     continue;
                 
                 var symbolInfo = semanticModel.GetSymbolInfo(assignmentOperationSyntax.Left);
-                foreach (var propertyDeclarationSyntax in ToPropertyDeclarationSyntax(symbolInfo.Symbol))
+                foreach (var propertyDeclarationSyntax in symbolInfo.Symbol.ToPropertyDeclarationSyntax())
                     yield return propertyDeclarationSyntax;
             }
         }
@@ -92,33 +137,10 @@ namespace Blowin.Required
                 foreach (var assignmentExpressionSyntax in body.DescendantNodes(e => !(e is AssignmentExpressionSyntax)).OfType<AssignmentExpressionSyntax>())
                 {
                     var symbolInfo = semanticModel.GetSymbolInfo(assignmentExpressionSyntax.Left);
-                    foreach (var propertyDeclarationSyntax in ToPropertyDeclarationSyntax(symbolInfo.Symbol))
+                    foreach (var propertyDeclarationSyntax in symbolInfo.Symbol.ToPropertyDeclarationSyntax())
                         yield return propertyDeclarationSyntax;
                 }
             }
-        }
-
-        private IEnumerable<PropertyDeclarationSyntax> ToPropertyDeclarationSyntax(ISymbol symbol)
-        {
-            if(symbol == null)
-                yield break;
-
-            foreach (var symbolDeclaringSyntaxReference in symbol.DeclaringSyntaxReferences)
-            {
-                if (symbolDeclaringSyntaxReference.GetSyntax() is PropertyDeclarationSyntax propertyDeclarationSyntax)
-                    yield return propertyDeclarationSyntax;
-            }
-        }
-
-        private static bool HasRequiredAttribute(IPropertySymbol symbol)
-        {
-            return symbol.GetAttributes().Any(e =>
-            {
-                var attributeName = e.AttributeClass?.Name;
-                return attributeName != null && (
-                    attributeName.Equals("Required") || attributeName.Equals("RequiredAttribute")
-                );
-            });
         }
     }
 }
