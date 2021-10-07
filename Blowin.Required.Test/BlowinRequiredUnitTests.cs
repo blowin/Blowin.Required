@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading.Tasks;
 using VerifyCS = Blowin.Required.Test.CSharpCodeFixVerifier<
     Blowin.Required.BlowinRequiredAnalyzer,
@@ -27,7 +26,11 @@ namespace Blowin.Required.Test
             Age = age;
         }
     }")]
-        [DataRow(@"class Person
+        [DataRow(@"
+using System;
+
+class RequiredAttribute : Attribute { }
+class Person
         {
             public string Name { get; set; }
             
@@ -40,14 +43,11 @@ namespace Blowin.Required.Test
                 Age = age;
             }
         }")]
-        public async Task Valid(string test)
-        {
-            await VerifyCS.VerifyAnalyzerAsync(test);
-        }
+        [DataRow(@"using System;
 
-        //Diagnostic and CodeFix both triggered and checked for
-        [DataTestMethod]
-        [DataRow(@"class Person
+class RequiredAttribute : Attribute { }
+
+class Person
         {
             public string Name { get; set; }
             
@@ -61,16 +61,109 @@ namespace Blowin.Required.Test
 
             public static Person Create()
             {
-                return {|#0:new Person()
+                return new Person()
                 {
-                    Name = ""
-                }|};
+                    Name = """"
+                };
             }
         }")]
-        public async Task Invalid(string test)
+        [DataRow(@"using System;
+
+class RequiredAttribute : Attribute { }
+
+class Person
         {
-            var expected = VerifyCS.Diagnostic(BlowinRequiredAnalyzer.DiagnosticId).WithLocation(0).WithArguments("Age");
+            public string Name { get; set; }
+            
+            [Required]
+            public int Age { get; set; }
+
+            public static Person Create()
+            {
+                return new Person()
+                {
+                    Age = 200
+                };
+            }
+        }")]
+        public async Task Valid(string test)
+        {
+            await VerifyCS.VerifyAnalyzerAsync(test);
+        }
+        
+        [DataTestMethod]
+        [DataRow(@"using System;
+
+class RequiredAttribute : Attribute { }
+
+class Person
+        {
+            public string Name { get; set; }
+            
+            [Required]
+            public int Age { get; set; }
+
+            private Person()
+            {
+                Name = ""ttt"";
+            }
+
+            public static Person Create()
+            {
+                return {|#0:new Person()
+                {
+                    Name = """"
+                }|};
+            }
+        }", "Age")]
+        [DataRow(@"using System;
+
+class RequiredAttribute : Attribute { }
+
+class Person
+        {
+            public string Name { get; set; }
+            
+            [Required]
+            public int Age { get; set; }
+
+            public static Person Create()
+            {
+                return {|#0:new Person()|};
+            }
+        }", "Age")]
+        public async Task Invalid(string test, string argument)
+        {
+            var expected = VerifyCS.Diagnostic(BlowinRequiredAnalyzer.DiagnosticId).WithLocation(0).WithArguments(argument);
             await VerifyCS.VerifyAnalyzerAsync(test, expected);
         }
+        
+//        [DataTestMethod]
+//        [DataRow(@"using System;
+//
+//class RequiredAttribute : Attribute { }
+//
+//class Person
+//        {
+//            public string Name { get; set; }
+//            
+//            [Required]
+//            public int Age { get; set; }
+//
+//            public static void Fail()
+//            {
+//                var tt = {|#0:Access<Person>.Test|};
+//            }
+//        }
+//
+//class Access<T> where T : new() 
+//{
+//    public static int Test = 20;
+//}", "Age")]
+//        public async Task InvalidGeneric(string test, string argument)
+//        {
+//            var expected = VerifyCS.Diagnostic(BlowinRequiredAnalyzer.DiagnosticId).WithLocation(0).WithArguments(argument);
+//            await VerifyCS.VerifyAnalyzerAsync(test, expected);
+//        }
     }
 }

@@ -28,6 +28,7 @@ namespace Blowin.Required
 
         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
+            return;
             var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
 
             // TODO: Replace the following code with your own analysis, generating a CodeAction for each fix to suggest
