@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Blowin.Required.Features;
 using Xunit;
 using VerifyCS = Blowin.Required.Test.CSharpCodeFixVerifier<
     Blowin.Required.BlowinRequiredAnalyzer,
@@ -6,7 +7,7 @@ using VerifyCS = Blowin.Required.Test.CSharpCodeFixVerifier<
 
 namespace Blowin.Required.Test
 {
-    public class RequiredInitializationFromInitializerTest
+    public class RequiredInitializerFeatureTest
     {
         [Theory]
         [InlineData(@"class Person
@@ -133,7 +134,7 @@ class Person
         }", "Age")]
         public async Task Invalid(string test, string argument)
         {
-            var expected = VerifyCS.Diagnostic(BlowinRequiredAnalyzer.DiagnosticObjectCreationRuleId).WithLocation(0).WithArguments(argument);
+            var expected = VerifyCS.Diagnostic(RequiredInitializerFeature.DiagnosticId).WithLocation(0).WithArguments(argument);
             await VerifyCS.VerifyAnalyzerAsync(test, expected);
         }
     }

@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Blowin.Required.Features;
 using Xunit;
 using VerifyCS = Blowin.Required.Test.CSharpCodeFixVerifier<
     Blowin.Required.BlowinRequiredAnalyzer,
@@ -6,7 +7,7 @@ using VerifyCS = Blowin.Required.Test.CSharpCodeFixVerifier<
 
 namespace Blowin.Required.Test
 {
-    public class RequiredWithGenericTest
+    public class GenericRestrictionFeatureTest
     {
         [Theory]
         [InlineData(@"using System;
@@ -91,7 +92,7 @@ interface IAccess
 }", "Person")]
         public async Task Invalid(string test, string argument)
         {
-            var expected = VerifyCS.Diagnostic(BlowinRequiredAnalyzer.DiagnosticGenericRuleId).WithLocation(0).WithArguments(argument);
+            var expected = VerifyCS.Diagnostic(GenericRestrictionFeature.DiagnosticId).WithLocation(0).WithArguments(argument);
             await VerifyCS.VerifyAnalyzerAsync(test, expected);
         }
         
