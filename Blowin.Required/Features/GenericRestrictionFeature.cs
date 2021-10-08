@@ -9,7 +9,7 @@ namespace Blowin.Required.Features
 {
     public sealed class GenericRestrictionFeature : IFeature
     {
-        public const string DiagnosticId = "BlowinRequired_GenericRestriction";
+        public const string DiagnosticId = "RPF002";
  
         public DiagnosticDescriptor DiagnosticDescriptor { get; } = new DiagnosticDescriptor(DiagnosticId,
             "Type can't be used as generic parameter with new() restriction",

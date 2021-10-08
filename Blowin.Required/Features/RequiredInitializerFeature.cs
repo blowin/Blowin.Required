@@ -10,7 +10,7 @@ namespace Blowin.Required.Features
 {
     public sealed class RequiredInitializerFeature : IFeature
     {
-        public const string DiagnosticId = "BlowinRequired_Initializer";
+        public const string DiagnosticId = "RPF001";
 
         public DiagnosticDescriptor DiagnosticDescriptor { get; } = new DiagnosticDescriptor(DiagnosticId,
             "Required property must be initialized",
