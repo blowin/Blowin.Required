@@ -49,9 +49,49 @@ class Person
             private static void Access<T>() where T : new(){}
         }
 ", "Person")]
+        [InlineData(@"using System;
+
+class RequiredAttribute : Attribute { }
+
+class Person
+        {
+            public string Name { get; set; }
+            
+            [Required]
+            public int Age { get; set; }
+
+            static void Fail(IAccess<{|#0:Person|}> tt)
+            {
+            }
+        }
+
+interface IAccess<T> where T : new() 
+{
+}", "Person")]
+        [InlineData(@"using System;
+
+class RequiredAttribute : Attribute { }
+
+class Person
+        {
+            public string Name { get; set; }
+            
+            [Required]
+            public int Age { get; set; }
+
+            static void Fail(IAccess tt)
+            {
+                tt.Test<{|#0:Person|}>();
+            }
+        }
+
+interface IAccess
+{
+    void Test<T>() where T : new(); 
+}", "Person")]
         public async Task Invalid(string test, string argument)
         {
-            var expected = VerifyCS.Diagnostic(BlowinRequiredAnalyzer.DiagnosticObjectCreationRuleId).WithLocation(0).WithArguments(argument);
+            var expected = VerifyCS.Diagnostic(BlowinRequiredAnalyzer.DiagnosticGenericRuleId).WithLocation(0).WithArguments(argument);
             await VerifyCS.VerifyAnalyzerAsync(test, expected);
         }
         

@@ -12,7 +12,7 @@ namespace Blowin.Required
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class BlowinRequiredAnalyzer : DiagnosticAnalyzer
     {
-        public const string DiagnosticObjectCreationRuleId = "BlowinRequired";
+        public const string DiagnosticObjectCreationRuleId = "BlowinRequired_Initializer";
 
         private static readonly DiagnosticDescriptor ObjectCreationRule = new DiagnosticDescriptor(DiagnosticObjectCreationRuleId,
             "Required property must be initialized",
@@ -21,7 +21,7 @@ namespace Blowin.Required
             DiagnosticSeverity.Error, 
             isEnabledByDefault: true);
         
-        public const string DiagnosticGenericRuleId = "BlowinRequired";
+        public const string DiagnosticGenericRuleId = "BlowinRequired_GenericRestriction";
 
         private static readonly DiagnosticDescriptor GenericRule = new DiagnosticDescriptor(DiagnosticGenericRuleId,
             "Type can't be used as generic parameter with new() restriction",
@@ -30,7 +30,16 @@ namespace Blowin.Required
             DiagnosticSeverity.Error, 
             isEnabledByDefault: true);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(ObjectCreationRule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
+        {
+            get
+            {
+                var builder = ImmutableArray.CreateBuilder<DiagnosticDescriptor>();
+                builder.Add(ObjectCreationRule);
+                builder.Add(GenericRule);
+                return builder.ToImmutable();
+            }
+        }
 
         public override void Initialize(AnalysisContext context)
         {
@@ -81,7 +90,7 @@ namespace Blowin.Required
                 if(!genericType.AllRequiredProperty().Any())
                     continue;
                 
-                var diagnostic = Diagnostic.Create(ObjectCreationRule, typeSyntax.GetLocation(), typeSyntax.ToString());
+                var diagnostic = Diagnostic.Create(GenericRule, typeSyntax.GetLocation(), typeSyntax.ToString());
                 context.ReportDiagnostic(diagnostic);
             }
         }
