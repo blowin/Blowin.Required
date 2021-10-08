@@ -12,6 +12,7 @@ namespace Blowin.Required
         {
             new RequiredInitializerFeature(),
             new GenericRestrictionFeature(),
+            new CtorAllRequiredFieldInitializedFeature(),
         };
         
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
@@ -34,9 +35,6 @@ namespace Blowin.Required
             
             foreach (var feature in Features)
                 feature.Register(context);
-            
-            // TODO: Analyze initialization required fields
-            //context.RegisterSyntaxNodeAction(AnalyzeCtor, SyntaxKind.ConstructorDeclaration);
         }
     }
 }
