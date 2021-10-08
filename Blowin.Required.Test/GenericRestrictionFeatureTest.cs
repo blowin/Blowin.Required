@@ -90,6 +90,24 @@ interface IAccess
 {
     void Test<T>() where T : new(); 
 }", "Person")]
+        [InlineData(@"using System;
+
+class RequiredAttribute : Attribute { }
+
+class Person
+        {
+            public string Name { get; set; }
+            
+            [Required]
+            public int Age { get; set; }
+
+            static void Fail()
+            {
+                var _ = typeof(Holder<{|#0:Person|}>);
+            }
+        }
+
+class Holder<T> where T : new(){}", "Person")]
         public async Task Invalid(string test, string argument)
         {
             var expected = VerifyCS.Diagnostic(GenericRestrictionFeature.DiagnosticId).WithLocation(0).WithArguments(argument);
@@ -246,6 +264,23 @@ class Person
             private static void Access<T>() where T : new() {}
         }
 ")]
+        [InlineData(@"using System;
+using System.Collections.Generic;
+
+class RequiredAttribute : Attribute { }
+
+class Person
+        {
+            public string Name { get; set; }
+            
+            [Required]
+            public int Age { get; set; }
+
+            static void Fail()
+            {
+                var _ = typeof(Dictionary<Person, string>);
+            }
+        }")]
         public async Task Valid(string test)
         {
             await VerifyCS.VerifyAnalyzerAsync(test);
