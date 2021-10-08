@@ -21,23 +21,37 @@ namespace Blowin.Required.Features
         public void Register(AnalysisContext context)
         {
             context.RegisterSyntaxNodeAction(AnalyzeTypeArgumentList, SyntaxKind.TypeArgumentList);
-        }
-        
-        private ImmutableArray<ITypeParameterSymbol> GetTypeParameters(TypeArgumentListSyntax typeArgumentListSyntax, 
-            SyntaxNodeAnalysisContext context)
-        {
-            var parentSymbol = context.SemanticModel.GetSymbolInfo(typeArgumentListSyntax.Parent).Symbol;
-            switch (parentSymbol)
-            {
-                case INamedTypeSymbol namedTypeSymbol:
-                    return namedTypeSymbol.TypeParameters;
-                case IMethodSymbol methodSymbol:
-                    return methodSymbol.TypeParameters;
-                default:
-                    return ImmutableArray<ITypeParameterSymbol>.Empty;
-            }
+            context.RegisterSyntaxNodeAction(AnalyzeInvocation, SyntaxKind.InvocationExpression);
         }
 
+        private void AnalyzeInvocation(SyntaxNodeAnalysisContext context)
+        {
+            if(!(context.SemanticModel.GetSymbolInfo(context.Node).Symbol is IMethodSymbol methodSymbol))
+                return;
+            
+            if(!methodSymbol.IsGenericMethod)
+                return;
+            
+            foreach (var methodSymbolParameter in methodSymbol.Parameters)
+            {
+                var typeParameterSymbol = methodSymbolParameter.OriginalDefinition?.Type as ITypeParameterSymbol;
+                if(typeParameterSymbol == null)
+                    continue;
+                
+                if(!typeParameterSymbol.HasConstructorConstraint)
+                    continue;
+
+                if(methodSymbolParameter.Type == null)
+                    continue;
+                
+                if (methodSymbolParameter.Type.AllRequiredProperty().Any())
+                {
+                    var diagnostic = Diagnostic.Create(DiagnosticDescriptor, context.Node.GetLocation(), methodSymbolParameter.Type.Name);
+                    context.ReportDiagnostic(diagnostic);
+                }
+            }
+        }
+        
         private void AnalyzeTypeArgumentList(SyntaxNodeAnalysisContext context)
         {
             if(!(context.Node is TypeArgumentListSyntax typeArgumentListSyntax))
@@ -62,6 +76,21 @@ namespace Blowin.Required.Features
                 
                 var diagnostic = Diagnostic.Create(DiagnosticDescriptor, typeSyntax.GetLocation(), typeSyntax.ToString());
                 context.ReportDiagnostic(diagnostic);
+            }
+        }
+        
+        private ImmutableArray<ITypeParameterSymbol> GetTypeParameters(TypeArgumentListSyntax typeArgumentListSyntax, 
+            SyntaxNodeAnalysisContext context)
+        {
+            var parentSymbol = context.SemanticModel.GetSymbolInfo(typeArgumentListSyntax.Parent).Symbol;
+            switch (parentSymbol)
+            {
+                case INamedTypeSymbol namedTypeSymbol:
+                    return namedTypeSymbol.TypeParameters;
+                case IMethodSymbol methodSymbol:
+                    return methodSymbol.TypeParameters;
+                default:
+                    return ImmutableArray<ITypeParameterSymbol>.Empty;
             }
         }
     }

@@ -110,6 +110,37 @@ class Person
 
             public static void Fail()
             {
+                {|#0:TestGenericCall.Access(new Person
+                {
+                    Age = 20,
+                })|};
+            }
+        }
+
+class TestGenericCall{
+    public static void Access<T>(T o) where T : new(){}
+}
+", "Person")]
+        public async Task InvalidImplicit(string test, string argument)
+        {
+            var expected = VerifyCS.Diagnostic(GenericRestrictionFeature.DiagnosticId).WithLocation(0).WithArguments(argument);
+            await VerifyCS.VerifyAnalyzerAsync(test, expected);
+        }
+        
+        [Theory]
+        [InlineData(@"using System;
+
+class RequiredAttribute : Attribute { }
+
+class Person
+        {
+            public string Name { get; set; }
+            
+            [Required]
+            public int Age { get; set; }
+
+            public static void Fail()
+            {
                 var tt = Access<Person>.Test;
             }
         }
