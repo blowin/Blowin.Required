@@ -10,20 +10,29 @@
   <PropertyGroup>
     <PackageId>Blowin.Required</PackageId>
     <PackageVersion>1.0.0.0</PackageVersion>
-    <Authors>blwoin</Authors>
-    <PackageLicenseUrl>http://LICENSE_URL_HERE_OR_DELETE_THIS_LINE</PackageLicenseUrl>
-    <PackageProjectUrl>http://PROJECT_URL_HERE_OR_DELETE_THIS_LINE</PackageProjectUrl>
-    <PackageIconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</PackageIconUrl>
-    <RepositoryUrl>http://REPOSITORY_URL_HERE_OR_DELETE_THIS_LINE</RepositoryUrl>
+    <Authors>Blowin</Authors>
+    <PackageLicenseUrl></PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/blowin/Blowin.Required</PackageProjectUrl>
+    <PackageIconUrl></PackageIconUrl>
+    <RepositoryUrl>https://github.com/blowin/Blowin.Required</RepositoryUrl>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <Description>Blowin.Required</Description>
-    <PackageReleaseNotes>Summary of changes made in this release of the package.</PackageReleaseNotes>
+    <PackageReleaseNotes>Implementation of proposal 'Required Properties'
+https://github.com/dotnet/csharplang/issues/3630
+
+Add required attribute to property and enjoy :)</PackageReleaseNotes>
     <Copyright>Copyright</Copyright>
     <PackageTags>Blowin.Required, analyzers</PackageTags>
     <DevelopmentDependency>true</DevelopmentDependency>
     <NoPackageAnalysis>true</NoPackageAnalysis>
 
     <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);_AddAnalyzersToOutput</TargetsForTfmSpecificContentInPackage>
+
+    <RepositoryType>git</RepositoryType>
+
+    <Company>BlowinBlowin</Company>
+
+    <PackageIcon>asterisk (1).png</PackageIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -33,6 +42,10 @@
 
   <ItemGroup>
     <None Update="tools\*.ps1" CopyToOutputDirectory="Always" Pack="true" PackagePath="" />
+    <None Include="C:\Users\blwoin\Downloads\asterisk (1).png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
   <Target Name="_AddAnalyzersToOutput">
