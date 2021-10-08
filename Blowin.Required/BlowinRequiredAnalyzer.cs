@@ -48,10 +48,15 @@ namespace Blowin.Required
             SyntaxNodeAnalysisContext context)
         {
             var parentSymbol = context.SemanticModel.GetSymbolInfo(typeArgumentListSyntax.Parent).Symbol;
-            if(!(parentSymbol is INamedTypeSymbol namedTypeSymbol))
-                return ImmutableArray<ITypeParameterSymbol>.Empty;
-
-            return namedTypeSymbol.TypeParameters;
+            switch (parentSymbol)
+            {
+                case INamedTypeSymbol namedTypeSymbol:
+                    return namedTypeSymbol.TypeParameters;
+                case IMethodSymbol methodSymbol:
+                    return methodSymbol.TypeParameters;
+                default:
+                    return ImmutableArray<ITypeParameterSymbol>.Empty;
+            }
         }
 
         private void AnalyzeTypeArgumentList(SyntaxNodeAnalysisContext context)
