@@ -2,7 +2,7 @@
 
 | Source      | Link |
 | ----------- | ----------- |
-| VSIX        | [![VSIX](https://img.shields.io/visual-studio-marketplace/d/Blowin.requiredproperty)](https://marketplace.visualstudio.com/items?itemName=Blowin.requiredproperty)       |
+| VSIX        | [![VSIX](https://img.shields.io/visual-studio-marketplace/v/Blowin.requiredproperty)](https://marketplace.visualstudio.com/items?itemName=Blowin.requiredproperty)       |
 | Nuget       | [![NUGET package](https://img.shields.io/nuget/v/Blowin.Required.svg)](https://www.nuget.org/packages/Blowin.Required/)        |
 
 Implementation of proposal 'Required Properties'
