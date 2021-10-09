@@ -1,5 +1,7 @@
 # Blowin.Required
 
+![Build](https://github.com/blowin/Blowin.Required/actions/workflows/dotnet.yml/badge.svg)
+
 | Source      | Link |
 | ----------- | ----------- |
 | VSIX        | [![VSIX](https://img.shields.io/visual-studio-marketplace/v/Blowin.requiredproperty)](https://marketplace.visualstudio.com/items?itemName=Blowin.requiredproperty)       |
