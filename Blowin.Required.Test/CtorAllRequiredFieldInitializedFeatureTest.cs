@@ -182,6 +182,7 @@ class Person
                 }
             {|#0:}|}
         }", "Age")]
+        
         [InlineData(@"using System;
 
 class RequiredAttribute : Attribute { }
@@ -203,6 +204,38 @@ class Person
                 {
                     return;
                     Age = 22;
+                }
+            {|#0:}|}
+        }", "Age")]
+        [InlineData(@"using System;
+
+class RequiredAttribute : Attribute { }
+
+class Person
+        {
+            public string Name { get; set; }
+            
+            [Required]
+            public int Age { get; set; }
+
+            private Person()
+            {
+                if(Age == 0)
+                {
+                    Age = 20;
+                }
+                else
+                {
+                    Age = 22;
+                    if(Age != default)
+                    {
+                        Age = default;
+                    }
+                    else
+                    {
+                        return;
+                        Age = 300;
+                    }
                 }
             {|#0:}|}
         }", "Age")]
@@ -346,6 +379,86 @@ class Person2
             
             [Required]
             public int Age { get; set; }
+        }")]
+        [InlineData(@"using System;
+
+class RequiredAttribute : Attribute { }
+
+class Person
+        {
+            public string Name { get; set; }
+            
+            [Required]
+            public int Age { get; set; }
+
+            private Person()
+            {
+                return;
+                if(Age == 0)
+                {
+                    Age = 20;
+                }
+                else
+                {
+                    Age = 22;
+                }
+            }
+        }")]
+        [InlineData(@"using System;
+
+class RequiredAttribute : Attribute { }
+
+class Person
+        {
+            public string Name { get; set; }
+            
+            [Required]
+            public int Age { get; set; }
+
+            private Person()
+            {
+                if(Age == 0)
+                {
+                    Age = 20;
+                }
+                else
+                {
+                    Age = 22;
+                    return;
+                }
+            }
+        }")]
+        [InlineData(@"using System;
+
+class RequiredAttribute : Attribute { }
+
+class Person
+        {
+            public string Name { get; set; }
+            
+            [Required]
+            public int Age { get; set; }
+
+            private Person()
+            {
+                if(Age == 0)
+                {
+                    Age = 20;
+                }
+                else
+                {
+                    Age = 22;
+                    if(Age != default)
+                    {
+                        Age = default;
+                    }
+                    else
+                    {
+                        Age = 300;
+                        return;
+                    }
+                }
+            }
         }")]
         public async Task Valid(string test)
         {
