@@ -29,3 +29,19 @@ Support diagnostics:
 2. Type can't be used as generic parameter with new() restriction
 3. If constructor initialization of required property, it should be initialized in any execution path
 
+### Success cases:
+
+
+![initializer](https://github.com/blowin/Blowin.Required/blob/master/images/initializer_ok.jpg)
+![initializer from constructor non required](https://github.com/blowin/Blowin.Required/blob/master/images/ctor_ok.PNG)
+![constructor & initializer](https://github.com/blowin/Blowin.Required/blob/master/images/ctor_initializer_ok.PNG)
+![initializer from constructor required](https://github.com/blowin/Blowin.Required/blob/master/images/ctor_required_initialization_ok.PNG)
+
+### Fail cases:
+
+![Initializer](https://github.com/blowin/Blowin.Required/blob/master/images/initializer.jpg)
+![Ctor fail](https://github.com/blowin/Blowin.Required/blob/master/images/ctor_fail.jpg)
+![Initialization required property from ctor](https://github.com/blowin/Blowin.Required/blob/master/images/ctor_required_initialization_fail.jpg)
+![Generic class restriction](https://github.com/blowin/Blowin.Required/blob/master/images/generic_class_generic_restriction_fail.jpg)
+![Generic method restriction](https://github.com/blowin/Blowin.Required/blob/master/images/generic_method_generic_restriction_fail.jpg)
+![Generic method, restriction for implicit parameter](https://github.com/blowin/Blowin.Required/blob/master/images/generic_method_implicit_parameter_generic_restriction_fail.jpg)
