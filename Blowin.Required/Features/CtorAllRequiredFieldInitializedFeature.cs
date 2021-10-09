@@ -29,29 +29,60 @@ namespace Blowin.Required.Features
             
             if(constructorDeclarationSyntax.Body == null)
                 return;
-
+            
             var holderType = context.ContainingSymbol.ContainingType as ITypeSymbol;
             
             var closeBraceTokenLocation = constructorDeclarationSyntax.Body.CloseBraceToken.GetLocation();
             
             var initializationIfStore = new HashSet<string>();
             var initializationElseStore = new HashSet<string>();
-            foreach (var ifStatementSyntax in constructorDeclarationSyntax.Body.DescendantNodes().OfType<IfStatementSyntax>())
+
+            var unreachableNodes = AllUnreachableNodes(constructorDeclarationSyntax.Body).ToHashSet();
+            var ifStatements = constructorDeclarationSyntax.Body
+                .DescendantNodes(n => !unreachableNodes.Contains(n))
+                .OfType<IfStatementSyntax>();
+        
+            foreach (var ifStatementSyntax in ifStatements)
             {
                 initializationIfStore.Clear();
                 initializationElseStore.Clear();
 
-                foreach (var propertyName in AllRequiredInIfInitialization(ifStatementSyntax.Statement, holderType, context))
+                foreach (var propertyName in AllRequiredInIfInitialization(ifStatementSyntax.Statement, holderType, context.Operation.SemanticModel, unreachableNodes))
                     initializationIfStore.Add(propertyName);
 
                 if (ifStatementSyntax.Else != null)
                 {
-                    foreach (var propertyName in AllRequiredInIfInitialization(ifStatementSyntax.Else, holderType, context))
+                    foreach (var propertyName in AllRequiredInIfInitialization(ifStatementSyntax.Else, holderType, context.Operation.SemanticModel, unreachableNodes))
                         initializationElseStore.Add(propertyName);   
                 }
 
                 ReportAllFail(context, initializationIfStore, initializationElseStore, closeBraceTokenLocation);
                 ReportAllFail(context, initializationElseStore, initializationIfStore, closeBraceTokenLocation);
+            }
+        }
+
+        private static IEnumerable<SyntaxNode> AllUnreachableNodes(SyntaxNode node)
+        {
+            var isRemoveNode = false;
+            foreach (var removeNode in node.ChildNodes())
+            {
+                if (isRemoveNode)
+                {
+                    yield return removeNode;
+                }
+                else
+                {
+                    if (!(removeNode is ReturnStatementSyntax))
+                    {
+                        foreach (var childRemoveNode in AllUnreachableNodes(removeNode))
+                            yield return childRemoveNode;
+                    }
+                    else
+                    {
+                        isRemoveNode = true;
+                        yield return removeNode;
+                    }
+                }
             }
         }
 
@@ -70,16 +101,14 @@ namespace Blowin.Required.Features
             }
         }
 
-        private IEnumerable<string> AllRequiredInIfInitialization(SyntaxNode node, ITypeSymbol holderType, OperationAnalysisContext context)
+        private IEnumerable<string> AllRequiredInIfInitialization(SyntaxNode node, ITypeSymbol holderType,
+            SemanticModel model, HashSet<SyntaxNode> unreachableNodes)
         {
             return node
-                .DescendantNodes(e => !(e is IfStatementSyntax))
+                .DescendantNodes(e => !(e is IfStatementSyntax) && !unreachableNodes.Contains(e))
                 .OfType<AssignmentExpressionSyntax>()
-                .Select(e =>
-                {
-                    var symbol = context.Operation.SemanticModel.GetSymbolInfo(e.Left);
-                    return symbol.Symbol;
-                })
+                .Where(e => !unreachableNodes.Contains(e))
+                .Select(e => ModelExtensions.GetSymbolInfo(model, e.Left).Symbol)
                 .Where(e => e is IPropertySymbol propertySymbol && SymbolEqualityComparer.Default.Equals(holderType, propertySymbol.ContainingType) && propertySymbol.HasRequiredAttribute())
                 .Select(e => e.Name);
         }

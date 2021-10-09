@@ -182,6 +182,30 @@ class Person
                 }
             {|#0:}|}
         }", "Age")]
+        [InlineData(@"using System;
+
+class RequiredAttribute : Attribute { }
+
+class Person
+        {
+            public string Name { get; set; }
+            
+            [Required]
+            public int Age { get; set; }
+
+            private Person()
+            {
+                if(Age == 0)
+                {
+                    Age = 20;
+                }
+                else
+                {
+                    return;
+                    Age = 22;
+                }
+            {|#0:}|}
+        }", "Age")]
         public async Task Invalid(string test, string argument)
         {
             var expected = VerifyCS.Diagnostic(CtorAllRequiredFieldInitializedFeature.DiagnosticId)
