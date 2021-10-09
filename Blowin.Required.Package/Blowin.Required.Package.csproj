@@ -5,11 +5,12 @@
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Title>Blowin.Required</Title>
   </PropertyGroup>
 
   <PropertyGroup>
     <PackageId>Blowin.Required</PackageId>
-    <PackageVersion>1.0.0.0</PackageVersion>
+    <PackageVersion>1.0.1</PackageVersion>
     <Authors>Blowin</Authors>
     <PackageLicenseUrl></PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/blowin/Blowin.Required</PackageProjectUrl>
@@ -32,7 +33,7 @@ Add required attribute to property and enjoy :)</PackageReleaseNotes>
 
     <Company>BlowinBlowin</Company>
 
-    <PackageIcon></PackageIcon>
+    <PackageIcon>icon.png</PackageIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -42,6 +43,10 @@ Add required attribute to property and enjoy :)</PackageReleaseNotes>
 
   <ItemGroup>
     <None Update="tools\*.ps1" CopyToOutputDirectory="Always" Pack="true" PackagePath="" />
+    <None Include="icon.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
   <Target Name="_AddAnalyzersToOutput">
