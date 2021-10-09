@@ -21,6 +21,25 @@ class Person
             [Required]
             public int Age { get; set; }
 
+            private Person(int a)
+            {
+                if(a > 0)
+                {
+                    Age = a;
+                }
+            {|#0:}|}
+        }", "Age")]
+        [InlineData(@"using System;
+
+class RequiredAttribute : Attribute { }
+
+class Person
+        {
+            public string Name { get; set; }
+            
+            [Required]
+            public int Age { get; set; }
+
             private Person()
             {
                 if(Age == 0)
