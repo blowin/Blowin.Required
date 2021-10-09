@@ -32,7 +32,7 @@ Add required attribute to property and enjoy :)</PackageReleaseNotes>
 
     <Company>BlowinBlowin</Company>
 
-    <PackageIcon>asterisk (1).png</PackageIcon>
+    <PackageIcon></PackageIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -42,10 +42,6 @@ Add required attribute to property and enjoy :)</PackageReleaseNotes>
 
   <ItemGroup>
     <None Update="tools\*.ps1" CopyToOutputDirectory="Always" Pack="true" PackagePath="" />
-    <None Include="C:\Users\blwoin\Downloads\asterisk (1).png">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
   </ItemGroup>
 
   <Target Name="_AddAnalyzersToOutput">
