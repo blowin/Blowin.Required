@@ -36,7 +36,8 @@ namespace Blowin.Required.Features
             
             var initializationIfStore = new HashSet<string>();
             var initializationElseStore = new HashSet<string>();
-
+            var invalidProperties = new HashSet<string>();
+            
             var unreachableNodes = AllUnreachableNodes(constructorDeclarationSyntax.Body).ToHashSet();
             var ifStatements = constructorDeclarationSyntax.Body
                 .DescendantNodes(n => !unreachableNodes.Contains(n))
@@ -56,8 +57,14 @@ namespace Blowin.Required.Features
                         initializationElseStore.Add(propertyName);   
                 }
 
-                ReportAllFail(context, initializationIfStore, initializationElseStore, closeBraceTokenLocation);
-                ReportAllFail(context, initializationElseStore, initializationIfStore, closeBraceTokenLocation);
+                AddInvalidProperty(initializationIfStore, initializationElseStore, invalidProperties);
+                AddInvalidProperty(initializationElseStore, initializationIfStore, invalidProperties);
+            }
+            
+            foreach (var invalidProperty in invalidProperties)
+            {
+                var diagnostic = Diagnostic.Create(DiagnosticDescriptor, closeBraceTokenLocation, invalidProperty);
+                context.ReportDiagnostic(diagnostic);
             }
         }
 
@@ -84,18 +91,16 @@ namespace Blowin.Required.Features
             }
         }
 
-        private void ReportAllFail(OperationAnalysisContext context, 
-            HashSet<string> initializationFirstStore,
+        private void AddInvalidProperty(HashSet<string> initializationFirstStore,
             HashSet<string> initializationSecondStore, 
-            Location closeBraceTokenLocation)
+            HashSet<string> invalidProperty)
         {
             foreach (var propertyName in initializationFirstStore)
             {
                 if (initializationSecondStore.Contains(propertyName)) 
                     continue;
-                
-                var diagnostic = Diagnostic.Create(DiagnosticDescriptor, closeBraceTokenLocation, propertyName);
-                context.ReportDiagnostic(diagnostic);
+
+                invalidProperty.Add(propertyName);
             }
         }
 
