@@ -14,9 +14,9 @@ namespace Blowin.Required.Features
  
         public DiagnosticDescriptor DiagnosticDescriptor { get; } = new DiagnosticDescriptor(DiagnosticId,
             "Type can't be used as generic parameter with new() restriction",
-            "Type '{0}' can't be used as generic parameter with new() restriction", 
-            "Feature", 
-            DiagnosticSeverity.Error, 
+            "Type '{0}' can't be used as generic parameter with new() restriction",
+            "Feature",
+            DiagnosticSeverity.Error,
             isEnabledByDefault: true);
         
         public void Register(AnalysisContext context)
@@ -25,6 +25,9 @@ namespace Blowin.Required.Features
             context.RegisterSyntaxNodeAction(AnalyzeInvocation, SyntaxKind.InvocationExpression);
         }
 
+        /// <summary>
+        /// Implicit generic parameter
+        /// </summary> 
         private void AnalyzeInvocation(SyntaxNodeAnalysisContext context)
         {
             if(!(context.SemanticModel.GetSymbolInfo(context.Node).Symbol is IMethodSymbol methodSymbol))
@@ -35,16 +38,23 @@ namespace Blowin.Required.Features
             
             foreach (var methodSymbolParameter in methodSymbol.Parameters)
             {
+                //               ↓
+                // void MyMethod<T>(T obj) where T : new() {}
                 var typeParameterSymbol = methodSymbolParameter.OriginalDefinition?.Type as ITypeParameterSymbol;
                 if(typeParameterSymbol == null)
                     continue;
                 
+                //                                    ↓
+                // void MyMethod<T>(T obj) where T : new() {}
                 if(!typeParameterSymbol.HasConstructorConstraint)
                     continue;
 
                 if(methodSymbolParameter.Type == null)
                     continue;
                 
+                //  Type of parameter
+                //           ↓
+                // MyMethod(obj);
                 if (methodSymbolParameter.Type.AllRequiredProperty().Any())
                 {
                     var diagnostic = Diagnostic.Create(DiagnosticDescriptor, context.Node.GetLocation(), methodSymbolParameter.Type.Name);
@@ -80,7 +90,7 @@ namespace Blowin.Required.Features
             }
         }
         
-        private ImmutableArray<ITypeParameterSymbol> GetTypeParameters(TypeArgumentListSyntax typeArgumentListSyntax, 
+        private static ImmutableArray<ITypeParameterSymbol> GetTypeParameters(TypeArgumentListSyntax typeArgumentListSyntax, 
             SyntaxNodeAnalysisContext context)
         {
             var parentSymbol = context.SemanticModel.GetSymbolInfo(typeArgumentListSyntax.Parent).Symbol;

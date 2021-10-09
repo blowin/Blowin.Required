@@ -80,8 +80,9 @@ namespace Blowin.Required.Features
                 var (level, checkNode) = nodesForVisit.Dequeue();
                 if (!(checkNode is ReturnStatementSyntax))
                 {
+                    var newLevel = level + 1;
                     foreach (var syntaxNode in checkNode.ChildNodes())
-                        nodesForVisit.Enqueue((level + 1, syntaxNode));
+                        nodesForVisit.Enqueue((newLevel, syntaxNode));
                 }
                 else
                 {
@@ -92,8 +93,7 @@ namespace Blowin.Required.Features
             }
         }
 
-        private void AddInvalidProperty(HashSet<string> initializationFirstStore,
-            HashSet<string> initializationSecondStore, 
+        private void AddInvalidProperty(HashSet<string> initializationFirstStore, HashSet<string> initializationSecondStore, 
             HashSet<string> invalidProperty)
         {
             foreach (var propertyName in initializationFirstStore)
@@ -112,7 +112,7 @@ namespace Blowin.Required.Features
                 .DescendantNodes(e => !(e is IfStatementSyntax) && !unreachableNodes.Contains(e))
                 .OfType<AssignmentExpressionSyntax>()
                 .Where(e => !unreachableNodes.Contains(e))
-                .Select(e => ModelExtensions.GetSymbolInfo(model, e.Left).Symbol)
+                .Select(e => model.GetSymbolInfo(e.Left).Symbol)
                 .Where(e => e is IPropertySymbol propertySymbol && SymbolEqualityComparer.Default.Equals(holderType, propertySymbol.ContainingType) && propertySymbol.HasRequiredAttribute())
                 .Select(e => e.Name);
         }
