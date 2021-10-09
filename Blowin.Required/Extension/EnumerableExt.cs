@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Blowin.Required
+namespace Blowin.Required.Extension
 {
     public static class EnumerableExt
     {
