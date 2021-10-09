@@ -30,7 +30,7 @@ namespace Blowin.Required.Features
             if(constructorDeclarationSyntax.Body == null)
                 return;
 
-            var holderType = context.Operation.SemanticModel.GetTypeInfo(constructorDeclarationSyntax.Parent).Type;
+            var holderType = context.ContainingSymbol.ContainingType as ITypeSymbol;
             
             var closeBraceTokenLocation = constructorDeclarationSyntax.Body.CloseBraceToken.GetLocation();
             
@@ -80,7 +80,7 @@ namespace Blowin.Required.Features
                     var symbol = context.Operation.SemanticModel.GetSymbolInfo(e.Left);
                     return symbol.Symbol;
                 })
-                .Where(e => e is IPropertySymbol propertySymbol && SymbolEqualityComparer.Default.Equals(holderType, propertySymbol.Type) && propertySymbol.HasRequiredAttribute())
+                .Where(e => e is IPropertySymbol propertySymbol && SymbolEqualityComparer.Default.Equals(holderType, propertySymbol.ContainingType) && propertySymbol.HasRequiredAttribute())
                 .Select(e => e.Name);
         }
     }
