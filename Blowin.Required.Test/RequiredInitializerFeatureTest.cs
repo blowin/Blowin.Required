@@ -132,6 +132,37 @@ class Person
                 return {|#0:new Person()|};
             }
         }", "Age")]
+        [InlineData(@"using System;
+
+class RequiredAttribute : Attribute { }
+
+class Person
+        {
+            public string Name { get; set; }
+            
+            [Required]
+            public int Age { get; set; }
+
+            public Person(Person2 p)
+            {
+                p.Age = 200;
+            }
+
+            public static Person Create(Person2 p)
+            {
+                return {|#0:new Person(p)
+                {
+                }|};
+            }
+        }
+
+class Person2
+        {
+            public string Name { get; set; }
+            
+            [Required]
+            public int Age { get; set; }
+        }", "Age")]
         public async Task Invalid(string test, string argument)
         {
             var expected = VerifyCS.Diagnostic(RequiredInitializerFeature.DiagnosticId).WithLocation(0).WithArguments(argument);

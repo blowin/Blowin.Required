@@ -30,6 +30,8 @@ namespace Blowin.Required.Features
             if(constructorDeclarationSyntax.Body == null)
                 return;
 
+            var holderType = context.Operation.SemanticModel.GetTypeInfo(constructorDeclarationSyntax.Parent).Type;
+            
             var closeBraceTokenLocation = constructorDeclarationSyntax.Body.CloseBraceToken.GetLocation();
             
             var initializationIfStore = new HashSet<string>();
@@ -39,12 +41,12 @@ namespace Blowin.Required.Features
                 initializationIfStore.Clear();
                 initializationElseStore.Clear();
 
-                foreach (var propertyName in AllRequiredInIfInitialization(ifStatementSyntax.Statement, context))
+                foreach (var propertyName in AllRequiredInIfInitialization(ifStatementSyntax.Statement, holderType, context))
                     initializationIfStore.Add(propertyName);
 
                 if (ifStatementSyntax.Else != null)
                 {
-                    foreach (var propertyName in AllRequiredInIfInitialization(ifStatementSyntax.Else, context))
+                    foreach (var propertyName in AllRequiredInIfInitialization(ifStatementSyntax.Else, holderType, context))
                         initializationElseStore.Add(propertyName);   
                 }
 
@@ -68,7 +70,7 @@ namespace Blowin.Required.Features
             }
         }
 
-        private IEnumerable<string> AllRequiredInIfInitialization(SyntaxNode node, OperationAnalysisContext context)
+        private IEnumerable<string> AllRequiredInIfInitialization(SyntaxNode node, ITypeSymbol holderType, OperationAnalysisContext context)
         {
             return node
                 .DescendantNodes(e => !(e is IfStatementSyntax))
@@ -78,7 +80,7 @@ namespace Blowin.Required.Features
                     var symbol = context.Operation.SemanticModel.GetSymbolInfo(e.Left);
                     return symbol.Symbol;
                 })
-                .Where(e => e is IPropertySymbol propertySymbol && propertySymbol.HasRequiredAttribute())
+                .Where(e => e is IPropertySymbol propertySymbol && SymbolEqualityComparer.Default.Equals(holderType, propertySymbol.Type) && propertySymbol.HasRequiredAttribute())
                 .Select(e => e.Name);
         }
     }

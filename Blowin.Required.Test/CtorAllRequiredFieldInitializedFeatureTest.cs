@@ -270,6 +270,40 @@ class Person
                 }
             }
         }")]
+        [InlineData(@"using System;
+
+class RequiredAttribute : Attribute { }
+
+class Person
+        {
+            public string Name { get; set; }
+            
+            [Required]
+            public int Age { get; set; }
+
+            public Person(Person2 p)
+            {
+                if(p != null){
+                    p.Age = 200;
+                }
+            }
+
+            public static Person Create(Person2 p)
+            {
+                return new Person(p)
+                {
+                    Age = 200
+                };
+            }
+        }
+
+class Person2
+        {
+            public string Name { get; set; }
+            
+            [Required]
+            public int Age { get; set; }
+        }")]
         public async Task Valid(string test)
         {
             await VerifyCS.VerifyAnalyzerAsync(test);
