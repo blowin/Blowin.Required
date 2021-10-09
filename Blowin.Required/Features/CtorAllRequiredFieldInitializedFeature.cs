@@ -63,25 +63,23 @@ namespace Blowin.Required.Features
 
         private static IEnumerable<SyntaxNode> AllUnreachableNodes(SyntaxNode node)
         {
-            var isRemoveNode = false;
-            foreach (var removeNode in node.ChildNodes())
+            var nodesForVisit = new Queue<(int Level, SyntaxNode Node)>();
+            foreach (var syntaxNode in node.ChildNodes())
+                nodesForVisit.Enqueue((1, syntaxNode));
+
+            while (nodesForVisit.Count > 0)
             {
-                if (isRemoveNode)
+                var (level, checkNode) = nodesForVisit.Dequeue();
+                if (!(checkNode is ReturnStatementSyntax))
                 {
-                    yield return removeNode;
+                    foreach (var syntaxNode in checkNode.ChildNodes())
+                        nodesForVisit.Enqueue((level + 1, syntaxNode));
                 }
                 else
                 {
-                    if (!(removeNode is ReturnStatementSyntax))
-                    {
-                        foreach (var childRemoveNode in AllUnreachableNodes(removeNode))
-                            yield return childRemoveNode;
-                    }
-                    else
-                    {
-                        isRemoveNode = true;
-                        yield return removeNode;
-                    }
+                    yield return checkNode;
+                    while (nodesForVisit.Count > 0 && nodesForVisit.Peek().Level == level)
+                        yield return nodesForVisit.Dequeue().Node;
                 }
             }
         }
