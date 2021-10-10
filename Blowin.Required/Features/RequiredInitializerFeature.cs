@@ -78,9 +78,20 @@ namespace Blowin.Required.Features
                     continue;
                 
                 var semanticModel = context.Compilation.GetSemanticModel(constructorDeclarationSyntax.Parent.SyntaxTree);
-                foreach (var assignmentExpressionSyntax in body.DescendantNodes(e => !(e is AssignmentExpressionSyntax)).OfType<AssignmentExpressionSyntax>())
+                
+                var (skipNodes, unreachableNodes) = constructorDeclarationSyntax.Body != null
+                    ? RequiredPropertySyntaxNodeAnalyzer.Instance.NotAlwaysInitializedProperties(symbol.ContainingType, constructorDeclarationSyntax.Body, semanticModel)
+                    : (null, null);
+                
+                foreach (var assignmentExpressionSyntax in body.DescendantNodes(e => (unreachableNodes == null || !unreachableNodes.Contains(e)) && !(e is AssignmentExpressionSyntax)).OfType<AssignmentExpressionSyntax>())
                 {
+                    if(unreachableNodes != null && unreachableNodes.Contains(assignmentExpressionSyntax))
+                        continue;
+                    
                     var symbolInfo = ModelExtensions.GetSymbolInfo(semanticModel, assignmentExpressionSyntax.Left);
+                    if (!(symbolInfo.Symbol is IPropertySymbol propertySymbol) || (skipNodes != null && skipNodes.Contains(propertySymbol)))
+                        continue;
+                    
                     foreach (var propertyDeclarationSyntax in symbolInfo.Symbol.ToPropertyDeclarationSyntax())
                         yield return propertyDeclarationSyntax;
                 }

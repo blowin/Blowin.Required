@@ -78,6 +78,27 @@ class Person
             [Required]
             public int Age { get; set; }
 
+            private Person() => Age = 10;
+
+            public static Person Create()
+            {
+                return new Person()
+                {
+                    Name = """"
+                };
+            }
+        }")]
+        [InlineData(@"using System;
+
+class RequiredAttribute : Attribute { }
+
+class Person
+        {
+            public string Name { get; set; }
+            
+            [Required]
+            public int Age { get; set; }
+
             public static Person Create()
             {
                 return new Person()
@@ -163,10 +184,70 @@ class Person2
             [Required]
             public int Age { get; set; }
         }", "Age")]
+        [InlineData(@"using System;
+
+class RequiredAttribute : Attribute { }
+
+class Person
+        {
+            public string Name { get; set; }
+            
+            [Required]
+            public int Age { get; set; }
+
+            private Person()
+            {
+                return;
+                Age = 200;
+            }
+
+            public static Person Create()
+            {
+                return {|#0:new Person()
+                {
+                    Name = """"
+                }|};
+            }
+        }", "Age")]
         public async Task Invalid(string test, string argument)
         {
             var expected = VerifyCS.Diagnostic(RequiredInitializerFeature.DiagnosticId).WithLocation(0).WithArguments(argument);
             await VerifyCS.VerifyAnalyzerAsync(test, expected);
+        }
+        
+        [Theory]
+        [InlineData(@"using System;
+
+class RequiredAttribute : Attribute { }
+
+class Person
+        {
+            public string Name { get; set; }
+            
+            [Required]
+            public int Age { get; set; }
+
+            private Person()
+            {
+                if(string.IsNullOrEmpty(Name)){
+                    Age = 200;
+                }
+                Name = ""ttt"";
+            {|#0:}|}
+
+            public static Person Create()
+            {
+                return {|#1:new Person()
+                {
+                    Name = """"
+                }|};
+            }
+        }", "Age")]
+        public async Task InvalidWithCtorFail(string test, string property)
+        {
+            var expectedCtor = VerifyCS.Diagnostic(CtorAllRequiredFieldInitializedFeature.DiagnosticId).WithLocation(0).WithArguments(property);
+            var expectedInitializer = VerifyCS.Diagnostic(RequiredInitializerFeature.DiagnosticId).WithLocation(1).WithArguments(property);
+            await VerifyCS.VerifyAnalyzerAsync(test, expectedCtor, expectedInitializer);
         }
     }
 }
