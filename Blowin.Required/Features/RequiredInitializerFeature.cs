@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using Blowin.Required.Extension;
 using Microsoft.CodeAnalysis;
@@ -44,13 +43,8 @@ namespace Blowin.Required.Features
             var errorMessage = string.Join(", ", notInitializedRequiredProperty).Trim();
             if(string.IsNullOrWhiteSpace(errorMessage))
                 return;
-
-            var diagnostic = Diagnostic.Create(DiagnosticDescriptor, 
-                objectCreationOperation.Syntax.GetLocation(), 
-                DiagnosticSeverity.Error,
-                Enumerable.Empty<Location>(), 
-                ImmutableDictionary<string, string>.Empty,
-                errorMessage);
+            
+            var diagnostic = DiagnosticDescriptor.ToDiagnostic(DiagnosticSeverity.Error, objectCreationOperation.Syntax.GetLocation(), errorMessage);
             context.ReportDiagnostic(diagnostic);
         }
 

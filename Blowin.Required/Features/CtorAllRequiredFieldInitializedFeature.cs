@@ -1,5 +1,4 @@
-﻿using System.Collections.Immutable;
-using System.Linq;
+﻿using Blowin.Required.Extension;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -38,12 +37,7 @@ namespace Blowin.Required.Features
             var closeBraceTokenLocation = constructorDeclarationSyntax.Body.CloseBraceToken.GetLocation();
             foreach (var invalidProperty in invalidProperties)
             {
-                var diagnostic = Diagnostic.Create(DiagnosticDescriptor, 
-                    closeBraceTokenLocation, 
-                    DiagnosticSeverity.Error,
-                    Enumerable.Empty<Location>(), 
-                    ImmutableDictionary<string, string>.Empty,
-                    invalidProperty.Name);
+                var diagnostic = DiagnosticDescriptor.ToDiagnostic(DiagnosticSeverity.Error, closeBraceTokenLocation, invalidProperty.Name);
                 context.ReportDiagnostic(diagnostic);
             }
         }

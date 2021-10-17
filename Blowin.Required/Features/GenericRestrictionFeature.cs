@@ -90,12 +90,7 @@ namespace Blowin.Required.Features
                 if(!genericType.AllRequiredProperty().Any())
                     continue;
                 
-                var diagnostic = Diagnostic.Create(DiagnosticDescriptor, 
-                    typeSyntax.GetLocation(), 
-                    DiagnosticSeverity.Error,
-                    Enumerable.Empty<Location>(), 
-                    ImmutableDictionary<string, string>.Empty,
-                    typeSyntax.ToString());
+                var diagnostic = DiagnosticDescriptor.ToDiagnostic(DiagnosticSeverity.Error, typeSyntax.GetLocation(), typeSyntax.ToString());
                 context.ReportDiagnostic(diagnostic);
             }
         }
