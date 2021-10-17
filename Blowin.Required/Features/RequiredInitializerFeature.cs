@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Blowin.Required.Extension;
 using Microsoft.CodeAnalysis;
@@ -16,7 +17,7 @@ namespace Blowin.Required.Features
         public DiagnosticDescriptor DiagnosticDescriptor { get; } = new DiagnosticDescriptor(DiagnosticId,
             "Required property must be initialized",
             "Required property '{0}' must be initialized", 
-            "Feature", 
+            Constants.Category, 
             DiagnosticSeverity.Error, 
             isEnabledByDefault: true);
         
@@ -44,7 +45,12 @@ namespace Blowin.Required.Features
             if(string.IsNullOrWhiteSpace(errorMessage))
                 return;
 
-            var diagnostic = Diagnostic.Create(DiagnosticDescriptor, objectCreationOperation.Syntax.GetLocation(), errorMessage);
+            var diagnostic = Diagnostic.Create(DiagnosticDescriptor, 
+                objectCreationOperation.Syntax.GetLocation(), 
+                DiagnosticSeverity.Error,
+                Enumerable.Empty<Location>(), 
+                ImmutableDictionary<string, string>.Empty,
+                errorMessage);
             context.ReportDiagnostic(diagnostic);
         }
 

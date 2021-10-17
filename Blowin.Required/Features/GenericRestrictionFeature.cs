@@ -15,7 +15,7 @@ namespace Blowin.Required.Features
         public DiagnosticDescriptor DiagnosticDescriptor { get; } = new DiagnosticDescriptor(DiagnosticId,
             "Type can't be used as generic parameter with new() restriction",
             "Type '{0}' can't be used as generic parameter with new() restriction",
-            "Feature",
+            Constants.Category,
             DiagnosticSeverity.Error,
             isEnabledByDefault: true);
         
@@ -57,7 +57,12 @@ namespace Blowin.Required.Features
                 // MyMethod(obj);
                 if (methodSymbolParameter.Type.AllRequiredProperty().Any())
                 {
-                    var diagnostic = Diagnostic.Create(DiagnosticDescriptor, context.Node.GetLocation(), methodSymbolParameter.Type.Name);
+                    var diagnostic = Diagnostic.Create(DiagnosticDescriptor, 
+                        context.Node.GetLocation(), 
+                        DiagnosticSeverity.Error,
+                        Enumerable.Empty<Location>(), 
+                        ImmutableDictionary<string, string>.Empty,
+                        methodSymbolParameter.Type.Name);
                     context.ReportDiagnostic(diagnostic);
                 }
             }
@@ -85,7 +90,12 @@ namespace Blowin.Required.Features
                 if(!genericType.AllRequiredProperty().Any())
                     continue;
                 
-                var diagnostic = Diagnostic.Create(DiagnosticDescriptor, typeSyntax.GetLocation(), typeSyntax.ToString());
+                var diagnostic = Diagnostic.Create(DiagnosticDescriptor, 
+                    typeSyntax.GetLocation(), 
+                    DiagnosticSeverity.Error,
+                    Enumerable.Empty<Location>(), 
+                    ImmutableDictionary<string, string>.Empty,
+                    typeSyntax.ToString());
                 context.ReportDiagnostic(diagnostic);
             }
         }

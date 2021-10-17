@@ -10,7 +10,7 @@
 
   <PropertyGroup>
     <PackageId>Blowin.Required</PackageId>
-    <PackageVersion>1.0.3</PackageVersion>
+    <PackageVersion>1.0.4</PackageVersion>
     <Authors>Blowin</Authors>
     <PackageLicenseUrl></PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/blowin/Blowin.Required</PackageProjectUrl>
